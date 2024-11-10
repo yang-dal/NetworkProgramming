@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ch08_BroadcastReceiver", "C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ch08_BroadcastSender", "Ch08_BroadcastSender\Ch08_BroadcastSender.vcxproj", "{479B558C-61F3-4C7F-B768-130BA118AB67}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ch06_Assignment", "Ch06_Assignment\Ch06_Assignment.vcxproj", "{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -81,6 +83,14 @@ Global
 		{479B558C-61F3-4C7F-B768-130BA118AB67}.Release|x64.Build.0 = Release|x64
 		{479B558C-61F3-4C7F-B768-130BA118AB67}.Release|x86.ActiveCfg = Release|Win32
 		{479B558C-61F3-4C7F-B768-130BA118AB67}.Release|x86.Build.0 = Release|Win32
+		{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}.Debug|x64.ActiveCfg = Debug|x64
+		{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}.Debug|x64.Build.0 = Debug|x64
+		{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}.Debug|x86.ActiveCfg = Debug|Win32
+		{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}.Debug|x86.Build.0 = Debug|Win32
+		{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}.Release|x64.ActiveCfg = Release|x64
+		{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}.Release|x64.Build.0 = Release|x64
+		{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}.Release|x86.ActiveCfg = Release|Win32
+		{5860EDA9-0B87-43A9-9BCC-3A0932F489DD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
