@@ -72,6 +72,8 @@ int main(int argc, char* argv[])
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
 	// WSAAsyncSelect()
+	// 연결 대기 소켓 (listen_sock)에 대한 이벤트(FD_ACCEPT or FD_CLOSE)를
+	// 윈도우 메시지 형식(WM_SOCKET)으로 받고록 등록
 	retval = WSAAsyncSelect(listen_sock, hWnd, WM_SOCKET, FD_ACCEPT | FD_CLOSE);
 	if (retval == SOCKET_ERROR) err_quit("WSAAsyncSelect()");
 
@@ -130,6 +132,9 @@ void ProcessSocketMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		printf("\n[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
 			inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 		AddSocketInfo(client_sock);
+
+		// 클라이언트 소켓(client_sock)에 대한 이벤트(FD_READ or FD_WRITE)를
+		// 윈도우 메시지 형식(WM_SOCKET)으로 받도록 등록
 		retval = WSAAsyncSelect(client_sock, hWnd,
 			WM_SOCKET, FD_READ | FD_WRITE | FD_CLOSE);
 		if (retval == SOCKET_ERROR) {
@@ -138,7 +143,11 @@ void ProcessSocketMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case FD_READ:
+		// 기존에 저장된 소켓 정보를 얻어옴
 		ptr = GetSocketInfo(wParam);
+
+		// 이전에 받았지만 아직 데이터를 보내지 못한 경우 곧바로 리턴하고
+		// 추후 보낸 후에 다시 FD_READ 이벤트가 발생하도록 recvdelayed flag 설정
 		if (ptr->recvbytes > 0) {
 			ptr->recvdelayed = true;
 			return;
@@ -157,8 +166,12 @@ void ProcessSocketMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		getpeername(wParam, (struct sockaddr*)&clientaddr, &addrlen);
 		printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
 			ntohs(clientaddr.sin_port), ptr->buf);
+	
 	case FD_WRITE:
+		// 기존에 저장된 소켓 정보를 얻어옴
 		ptr = GetSocketInfo(wParam);
+
+		// 보낸 데이터가 없음으로 리턴
 		if (ptr->recvbytes <= ptr->sendbytes)
 			return;
 		// 데이터 보내기
@@ -169,10 +182,13 @@ void ProcessSocketMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			RemoveSocketInfo(wParam);
 			return;
 		}
+		// 보낸 데이터 크기 누적
 		ptr->sendbytes += retval;
 		// 받은 데이터를 모두 보냈는지 체크
 		if (ptr->recvbytes == ptr->sendbytes) {
 			ptr->recvbytes = ptr->sendbytes = 0;
+			// 강제로 FD_READ를 발생시켜서
+			// 이전에 도착했지만 처리하지 못한 데이터를 읽음
 			if (ptr->recvdelayed) {
 				ptr->recvdelayed = false;
 				PostMessage(hWnd, WM_SOCKET, wParam, FD_READ);
