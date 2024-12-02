@@ -39,6 +39,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ch11_SelectTCPServer", "Ch1
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ch11_AsyncSelectTCPServer", "Ch11_AsyncSelectTCPServer\Ch11_AsyncSelectTCPServer.vcxproj", "{C0B6C542-B191-4341-B549-D0990B0E65AF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ch11_CompletionPortTCPServer", "Ch11_CompletionPortTCPServer\Ch11_CompletionPortTCPServer.vcxproj", "{A2A09EBC-F585-466A-97CD-BC93D3280452}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -191,6 +193,14 @@ Global
 		{C0B6C542-B191-4341-B549-D0990B0E65AF}.Release|x64.Build.0 = Release|x64
 		{C0B6C542-B191-4341-B549-D0990B0E65AF}.Release|x86.ActiveCfg = Release|Win32
 		{C0B6C542-B191-4341-B549-D0990B0E65AF}.Release|x86.Build.0 = Release|Win32
+		{A2A09EBC-F585-466A-97CD-BC93D3280452}.Debug|x64.ActiveCfg = Debug|x64
+		{A2A09EBC-F585-466A-97CD-BC93D3280452}.Debug|x64.Build.0 = Debug|x64
+		{A2A09EBC-F585-466A-97CD-BC93D3280452}.Debug|x86.ActiveCfg = Debug|Win32
+		{A2A09EBC-F585-466A-97CD-BC93D3280452}.Debug|x86.Build.0 = Debug|Win32
+		{A2A09EBC-F585-466A-97CD-BC93D3280452}.Release|x64.ActiveCfg = Release|x64
+		{A2A09EBC-F585-466A-97CD-BC93D3280452}.Release|x64.Build.0 = Release|x64
+		{A2A09EBC-F585-466A-97CD-BC93D3280452}.Release|x86.ActiveCfg = Release|Win32
+		{A2A09EBC-F585-466A-97CD-BC93D3280452}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
