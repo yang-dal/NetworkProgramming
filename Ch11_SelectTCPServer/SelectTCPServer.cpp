@@ -62,20 +62,23 @@ int main(int argc, char* argv[])
 		FD_ZERO(&wset);
 		FD_SET(listen_sock, &rset);
 		for (int i = 0; i < nTotalSockets; i++) {
+			// 받은 데이터가 보낸 데이터보다 많으면 (에코 서버 특성 상 데이터를 보내야하기 때문에)
+			// 쓰기 셋에 소켓 추가
 			if (SocketInfoArray[i]->recvbytes > SocketInfoArray[i]->sendbytes)
 				FD_SET(SocketInfoArray[i]->sock, &wset);
+			// 받은 데이터가 보낸 데이터와 같거나 작으면, 읽기 셋에 소켓 추가
 			else
 				FD_SET(SocketInfoArray[i]->sock, &rset);
 		}
 
 		// select()
-		nready = select(0, &rset, &wset, NULL, NULL);
+		nready = select(0, &rset, &wset, NULL, NULL); // 소켓 이벤트를 기다림 (타임아웃 null이기 때문에 무한 대기)
 		if (nready == SOCKET_ERROR) err_quit("select()");
 
 		// 소켓 셋 검사(1): 클라이언트 접속 수용
-		if (FD_ISSET(listen_sock, &rset)) {
+		if (FD_ISSET(listen_sock, &rset)) { // 읽기 셋에 연결 대기 소켓이 있음 -> 접속한 클라이언트가 있다는 뜻
 			addrlen = sizeof(clientaddr);
-			client_sock = accept(listen_sock,
+			client_sock = accept(listen_sock, // 클라이언트 소켓도 넌블로킹 소켓으로 만들어짐
 				(struct sockaddr*)&clientaddr, &addrlen);
 			if (client_sock == INVALID_SOCKET) {
 				err_display("accept()");
@@ -88,51 +91,51 @@ int main(int argc, char* argv[])
 				printf("\n[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
 					addr, ntohs(clientaddr.sin_port));
 				// 소켓 정보 추가: 실패 시 소켓 닫음
-				if (!AddSocketInfo(client_sock))
+				if (!AddSocketInfo(client_sock)) // 추후 소켓에 대해 읽고 쓰기를 하기 위해 소켓을 별도로 저장
 					closesocket(client_sock);
 			}
-			if (--nready <= 0)
+			if (--nready <= 0) // 읽기나 쓰기 작업이 필요한 소켓이 없음을 의미
 				continue;
 		}
 
 		// 소켓 셋 검사(2): 데이터 통신
-		for (int i = 0; i < nTotalSockets; i++) {
+		for (int i = 0; i < nTotalSockets; i++) { // 현재 작업이 필요한 모든 소켓에 대해서
 			SOCKETINFO* ptr = SocketInfoArray[i];
-			if (FD_ISSET(ptr->sock, &rset)) {
+			if (FD_ISSET(ptr->sock, &rset)) { // 읽기 셋에 있는 소켓 처리
 				// 데이터 받기
 				retval = recv(ptr->sock, ptr->buf, BUFSIZE, 0);
 				if (retval == SOCKET_ERROR) {
 					err_display("recv()");
-					RemoveSocketInfo(i);
+					RemoveSocketInfo(i); // 에러 발생한 소켓에 대해서 제거
 				}
 				else if (retval == 0) {
-					RemoveSocketInfo(i);
+					RemoveSocketInfo(i); // 연결이 종료된 소켓에 대해서 제거
 				}
 				else {
-					ptr->recvbytes = retval;
+					ptr->recvbytes = retval; // 받은 데이터 크기 초기화
 					// 클라이언트 정보 얻기
 					addrlen = sizeof(clientaddr);
 					getpeername(ptr->sock, (struct sockaddr*)&clientaddr, &addrlen);
 					// 받은 데이터 출력
-					ptr->buf[ptr->recvbytes] = '\0';
+					ptr->buf[ptr->recvbytes] = '\0'; // 받은 데이터 끝에 null 추가
 					char addr[INET_ADDRSTRLEN];
 					inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
 					printf("[TCP/%s:%d] %s\n", addr,
 						ntohs(clientaddr.sin_port), ptr->buf);
 				}
 			}
-			else if (FD_ISSET(ptr->sock, &wset)) {
+			else if (FD_ISSET(ptr->sock, &wset)) { // 쓰기 셋에 있는 소켓 처리
 				// 데이터 보내기
-				retval = send(ptr->sock, ptr->buf + ptr->sendbytes,
+				retval = send(ptr->sock, ptr->buf + ptr->sendbytes, // 버퍼 첫 위치에서 보낸 만큼 이후의 데이터를 send 함수로 보냄
 					ptr->recvbytes - ptr->sendbytes, 0);
 				if (retval == SOCKET_ERROR) {
 					err_display("send()");
-					RemoveSocketInfo(i);
+					RemoveSocketInfo(i); // 에러 발생한 소켓에 대해서 제거
 				}
 				else {
-					ptr->sendbytes += retval;
-					if (ptr->recvbytes == ptr->sendbytes) {
-						ptr->recvbytes = ptr->sendbytes = 0;
+					ptr->sendbytes += retval; // 보낸 데이터만큼 sendbytes를 업데이트
+					if (ptr->recvbytes == ptr->sendbytes) { // 받은 데이터만큼 보냈으면
+						ptr->recvbytes = ptr->sendbytes = 0; // 0으로 초기화
 					}
 				}
 			}
@@ -162,7 +165,7 @@ bool AddSocketInfo(SOCKET sock)
 	ptr->sock = sock;
 	ptr->recvbytes = 0;
 	ptr->sendbytes = 0;
-	SocketInfoArray[nTotalSockets++] = ptr;
+	SocketInfoArray[nTotalSockets++] = ptr; // 마지막에 추가
 	return true;
 }
 
@@ -186,7 +189,9 @@ void RemoveSocketInfo(int nIndex)
 	closesocket(ptr->sock);
 	delete ptr;
 
+	// 지워지는 소켓 정보가 마지막이 아니라면
 	if (nIndex != (nTotalSockets - 1))
+		// 지워지는 위치에 마지막 소켓 정보를 가져옴
 		SocketInfoArray[nIndex] = SocketInfoArray[nTotalSockets - 1];
 	--nTotalSockets;
 }
